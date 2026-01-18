@@ -154,13 +154,13 @@ class UserForNotificationRepository
     public function find(int $id): UserForNotification
     {
         $sql = <<<SQL
-        SELECT *
-        FROM users u
-          LEFT JOIN profile p ON p.user_id = u.id
-          LEFT JOIN city c ON c.id = u.city_id
-          LEFT JOIN news n ON n.city_id = c.id
-        WHERE u.id = ?
-        SQL;
+            SELECT *
+            FROM users u
+              LEFT JOIN profile p ON p.user_id = u.id
+              LEFT JOIN city c ON c.id = u.city_id
+              LEFT JOIN news n ON n.city_id = c.id
+            WHERE u.id = ?
+            SQL;
 
         return AspectMapper::one(UserForNotification::class, $this->em, $sql, [$id]);
     }
