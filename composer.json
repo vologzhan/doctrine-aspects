@@ -1,0 +1,19 @@
+{
+    "name": "vologzhan/doctrine-aspects",
+    "description": "Aspects for Doctrine ORM",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Vologzhan\\DoctrineAspects\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vologzhanin Alexandr",
+            "email": "elephantmaker@mail.ru"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {}
+}
