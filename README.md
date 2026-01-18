@@ -187,7 +187,7 @@ class UserForNotificationRepository
             ->createQueryBuilder('u')
             ->leftJoin('u.profile', 'p')
             ->leftJoin('u.city', 'c')
-            ->leftJoin('u.news', 'n')
+            ->leftJoin('c.news', 'n')
             ->andWhere('u.id = :id')
             ->setParameter(':id', $id);
 
