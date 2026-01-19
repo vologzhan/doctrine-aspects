@@ -53,7 +53,7 @@ Entity и DTO связываются по названию полей в сущ�
 use Vologzhan\DoctrineDto\Annotation\Dto;
 
 /**
- * @Dto(\App\Entity\User::class) 
+ * @Dto(\App\Entity\User::class)
  */
 class UserForNotification
 {
@@ -71,7 +71,7 @@ class ProfileForNotification
 class CityForNotification
 {
     public string $name;
-    
+
     /** @var NewsForNotification[] */
     public array $news;
 }
@@ -93,7 +93,7 @@ class NewsForNotification
 use Vologzhan\DoctrineDto\Annotation\Dto;
 
 /**
- * @Dto(\App\Entity\User::class) 
+ * @Dto(\App\Entity\User::class)
  */
 class UserForNotification
 {
@@ -108,7 +108,7 @@ class UserForNotification
 use Vologzhan\DoctrineDto\Annotation\Dto;
 
 /**
- * @Dto(\App\Entity\User::class) 
+ * @Dto(\App\Entity\User::class)
  */
 interface UserDtoInterface
 {
