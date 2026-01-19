@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Metadata\Dto;
+namespace Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto;
 
 class PropertyRel extends Property
 {

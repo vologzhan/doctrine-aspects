@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Metadata;
+namespace Vologzhan\DoctrineDto\Metadata\DtoFactory;
 
 use phpDocumentor\Reflection\TypeResolver;
 use phpDocumentor\Reflection\Types\Context;
 use phpDocumentor\Reflection\Types\ContextFactory;
 use Vologzhan\DoctrineDto\Exception\DoctrineDtoException;
-use Vologzhan\DoctrineDto\Metadata\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Metadata\Dto\Property;
-use Vologzhan\DoctrineDto\Metadata\Dto\PropertyRel;
+use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\DtoMetadata;
+use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\Property;
+use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\PropertyRel;
 
 class DtoMetadataFactory
 {
     /**
      * @throws DoctrineDtoException
      */
-    public static function parse(string $dtoClassName): DtoMetadata
+    public static function create(string $dtoClassName): DtoMetadata
     {
         $dtoReflection = self::getDtoReflection($dtoClassName);
 
-        return self::parseRecursive($dtoReflection);
+        return self::createRecursive($dtoReflection);
     }
 
     /**
      * @throws DoctrineDtoException
      */
-    private static function parseRecursive(\ReflectionClass $class): DtoMetadata
+    private static function createRecursive(\ReflectionClass $class): DtoMetadata
     {
         /** @var Context|null $classContext */
         $classContext = null;
@@ -60,7 +60,7 @@ class DtoMetadataFactory
                 $nextClassFullName = (string)$resolvedType->getFqsen();
                 $nextDto = self::getDtoReflection($nextClassFullName);
 
-                $properties[] = new PropertyRel($prop->name, true, self::parseRecursive($nextDto));
+                $properties[] = new PropertyRel($prop->name, true, self::createRecursive($nextDto));
                 continue;
             }
 
@@ -70,7 +70,7 @@ class DtoMetadataFactory
             }
 
             $nextDto = self::getDtoReflection($type->getName());
-            $properties[] = new PropertyRel($prop->name, false, self::parseRecursive($nextDto));
+            $properties[] = new PropertyRel($prop->name, false, self::createRecursive($nextDto));
         }
 
         return new DtoMetadata($class->name, $properties);
