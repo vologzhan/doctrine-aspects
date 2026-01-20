@@ -2,26 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Metadata\DtoFactory;
+namespace Vologzhan\DoctrineDto\Metadata;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use phpDocumentor\Reflection\TypeResolver;
 use phpDocumentor\Reflection\Types\Context;
 use phpDocumentor\Reflection\Types\ContextFactory;
 use Vologzhan\DoctrineDto\Exception\DoctrineDtoException;
-use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\Property;
-use Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto\PropertyRel;
+use Vologzhan\DoctrineDto\Metadata\Dto\DtoMetadata;
+use Vologzhan\DoctrineDto\Metadata\Dto\Property;
+use Vologzhan\DoctrineDto\Metadata\Dto\PropertyRel;
 
-class DtoMetadataFactory
+final class MetadataFactory
 {
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     /**
      * @throws DoctrineDtoException
      */
-    public static function create(string $dtoClassName): DtoMetadata
+    public function create(string $dtoClassName, string $entityClassName): DtoMetadata
     {
         $dtoReflection = self::getDtoReflection($dtoClassName);
+        $dtoMetadata = self::createRecursive($dtoReflection);
 
-        return self::createRecursive($dtoReflection);
+        $entityMetadata = $this->em->getClassMetadata($entityClassName);
+        $this->addEntityMetadataRecursive($dtoMetadata, $entityMetadata);
+
+        return $dtoMetadata;
     }
 
     /**
@@ -74,6 +87,35 @@ class DtoMetadataFactory
         }
 
         return new DtoMetadata($class->name, $properties);
+    }
+
+    public function addEntityMetadataRecursive(DtoMetadata $dtoMetadata, ClassMetadata $entityMetadata): void
+    {
+        $dtoMetadata->tableName = $entityMetadata->getTableName();
+
+        foreach ($dtoMetadata->properties as $prop) {
+            if ($prop instanceof PropertyRel) {
+                $nextEntity = $entityMetadata->getAssociationMapping($prop->property->name);
+                $nextEntityMetadata = $this->em->getClassMetadata($nextEntity['targetEntity']);
+
+                if ($nextEntity['isOwningSide']) {
+                    $prop->property->columnName = $nextEntity['joinColumns'][0]['name'];
+                    $prop->foreignColumn = $nextEntity['joinColumns'][0]['referencedColumnName'];
+                } else {
+                    $ownerMapping = $nextEntityMetadata->getAssociationMapping($nextEntity['mappedBy']);
+                    $prop->property->columnName = $ownerMapping['joinColumns'][0]['referencedColumnName'];
+                    $prop->foreignColumn = $ownerMapping['joinColumns'][0]['name'];
+                }
+
+                $this->addEntityMetadataRecursive($prop->dtoMetadata, $nextEntityMetadata);
+                continue;
+            }
+
+            if (!$entityMetadata->hasField($prop->name)) {
+                throw new DoctrineDtoException("'$entityMetadata->name::$prop->name' does not exist");
+            }
+            $prop->columnName = $entityMetadata->getColumnName($prop->name);
+        }
     }
 
     /**

@@ -55,28 +55,28 @@ use Vologzhan\DoctrineDto\Annotation\Dto;
 /**
  * @Dto(\App\Entity\User::class)
  */
-class UserForNotification
+class UserDto
 {
-    public ProfileForNotification $profile;
-    public CityForNotification $city;
+    public ProfileDto $profile;
+    public CityDto $city;
 }
 
-class ProfileForNotification
+class ProfileDto
 {
     public string $firstName;
     public string $secondName;
     public string $email;
 }
 
-class CityForNotification
+class CityDto
 {
     public string $name;
 
-    /** @var NewsForNotification[] */
+    /** @var NewsDto[] */
     public array $news;
 }
 
-class NewsForNotification
+class NewsDto
 {
     public string $title;
     public string $link;
@@ -95,7 +95,7 @@ use Vologzhan\DoctrineDto\Annotation\Dto;
 /**
  * @Dto(\App\Entity\User::class)
  */
-class UserForNotification
+class UserDto
 {
     // ...
 }
@@ -117,7 +117,7 @@ interface UserDtoInterface
 
 ```php
 // здесь нет аннотации, она указана в интерфейсе
-class UserForNotification implements UserDtoInterface
+class UserDto implements UserDtoInterface
 {
     // ...
 }
@@ -131,7 +131,7 @@ class UserForNotification implements UserDtoInterface
   * `array` для получения списка DTO
 
 Все методы имеют одинаковую сигнатуру **принимаемых аргументов**:
-  * `dtoClassName` название класса DTO, например `UserForNotification::class`
+  * `dtoClassName` название класса DTO, например `UserDto::class`
   * `doctrine` - EntityManagerInterface или QueryBuilder
   * `sql (optional)` - только для нативных запросов. Для QueryBuilder sql берется из билдера
   * `params (optional)` - только для нативных запросов. Для QueryBuilder параметры берутся из билдера
@@ -147,11 +147,11 @@ class UserForNotification implements UserDtoInterface
 ```php
 namespace App\Repository;
 
-use App\Dto\UserForNotification;
+use App\Dto\UserDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Vologzhan\DoctrineDto\DtoMapper;
 
-class UserForNotificationRepository
+class UserDtoRepository
 {
     private EntityManagerInterface $em;
 
@@ -160,7 +160,7 @@ class UserForNotificationRepository
         $this->em = $em;
     }
 
-    public function find(int $id): UserForNotification
+    public function find(int $id): UserDto
     {
         $sql = <<<SQL
             SELECT *
@@ -171,7 +171,7 @@ class UserForNotificationRepository
             WHERE u.id = ?
             SQL;
 
-        return DtoMapper::one(UserForNotification::class, $this->em, $sql, [$id]);
+        return DtoMapper::one(UserDto::class, $this->em, $sql, [$id]);
     }
 }
 ```
@@ -183,12 +183,12 @@ class UserForNotificationRepository
 ```php
 namespace App\Repository;
 
-use App\Dto\UserForNotification;
+use App\Dto\UserDto;
 use Vologzhan\DoctrineDto\DtoMapper;
 
-class UserForNotificationRepository
+class UserDtoRepository
 {
-    public function find(int $id): UserForNotification
+    public function find(int $id): UserDto
     {
         $qb = $this
             ->createQueryBuilder('u')
@@ -198,7 +198,7 @@ class UserForNotificationRepository
             ->andWhere('u.id = :id')
             ->setParameter(':id', $id);
 
-        return DtoMapper::one(UserForNotification::class, $qb);
+        return DtoMapper::one(UserDto::class, $qb);
     }
 }
 ```

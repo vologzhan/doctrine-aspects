@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Metadata\DtoFactory\Dto;
+namespace Vologzhan\DoctrineDto\Metadata\Dto;
 
 class DtoMetadata
 {
     public string $className;
+    public string $tableName;
 
     /** @var Property[]|PropertyRel[] */
     public array $properties;
