@@ -50,7 +50,7 @@ Entity и DTO связываются по названию полей в сущ�
 Классы DTO:
 
 ```php
-use Vologzhan\DoctrineDto\Annotation\Dto;
+use Vologzhan\DoctrineDto\Dto;
 
 /**
  * @Dto(\App\Entity\User::class)
@@ -90,7 +90,7 @@ class NewsDto
 **Обязательно указать полное имя класса с лидирующим \\** - только этот вариант нормально обрабатывает PhpStorm
 
 ```php
-use Vologzhan\DoctrineDto\Annotation\Dto;
+use Vologzhan\DoctrineDto\Dto;
 
 /**
  * @Dto(\App\Entity\User::class)
@@ -105,7 +105,7 @@ class UserDto
 интерфейс с аннотацией и имплементировать этот пустой интерфейс для всех DTO (даже вложенных), это упростит поиск DTO в проекте.
 
 ```php
-use Vologzhan\DoctrineDto\Annotation\Dto;
+use Vologzhan\DoctrineDto\Dto;
 
 /**
  * @Dto(\App\Entity\User::class)

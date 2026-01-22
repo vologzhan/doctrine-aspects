@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Metadata;
+namespace Vologzhan\DoctrineDto;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\MappingException;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use Vologzhan\DoctrineDto\Exception\DoctrineDtoException;
-use Vologzhan\DoctrineDto\Metadata\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Metadata\Dto\Property;
-use Vologzhan\DoctrineDto\Metadata\Dto\PropertyRel;
+use Vologzhan\DoctrineDto\Dto\DtoMetadata;
+use Vologzhan\DoctrineDto\Dto\Property;
+use Vologzhan\DoctrineDto\Dto\PropertyRel;
 
 final class MetadataFactory
 {

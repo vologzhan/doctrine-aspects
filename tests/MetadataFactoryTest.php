@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Tests\Metadata;
+namespace Vologzhan\DoctrineDto\Tests;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Tools\Setup;
 use PHPUnit\Framework\TestCase;
-use Vologzhan\DoctrineDto\Metadata\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Metadata\Dto\Property;
-use Vologzhan\DoctrineDto\Metadata\Dto\PropertyRel;
-use Vologzhan\DoctrineDto\Metadata\MetadataFactory;
+use Vologzhan\DoctrineDto\Dto\DtoMetadata;
+use Vologzhan\DoctrineDto\Dto\Property;
+use Vologzhan\DoctrineDto\Dto\PropertyRel;
+use Vologzhan\DoctrineDto\MetadataFactory;
 use Vologzhan\DoctrineDto\Tests\Dto\CityDto;
 use Vologzhan\DoctrineDto\Tests\Dto\NewsDto;
 use Vologzhan\DoctrineDto\Tests\Dto\ProfileDto;

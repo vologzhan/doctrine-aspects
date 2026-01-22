@@ -8,11 +8,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\QueryBuilder;
 use PHPSQLParser\PHPSQLParser;
-use Vologzhan\DoctrineDto\Exception\DoctrineDtoException;
-use Vologzhan\DoctrineDto\Metadata\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Metadata\Dto\Property;
-use Vologzhan\DoctrineDto\Metadata\Dto\PropertyRel;
-use Vologzhan\DoctrineDto\Metadata\MetadataFactory;
+use Vologzhan\DoctrineDto\Dto\DtoMetadata;
+use Vologzhan\DoctrineDto\Dto\Property;
+use Vologzhan\DoctrineDto\Dto\PropertyRel;
 use Vologzhan\DoctrineDto\Tests\Entity\User;
 
 class DtoMapper

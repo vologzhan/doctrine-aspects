@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Vologzhan\DoctrineDto\Exception;
+namespace Vologzhan\DoctrineDto;
 
 class DoctrineDtoException extends \Exception
 {
