@@ -14,8 +14,7 @@ use Vologzhan\DoctrineDto\DtoMetadata\DtoMetadata;
 use Vologzhan\DoctrineDto\DtoMetadata\Property;
 use Vologzhan\DoctrineDto\DtoMetadata\PropertyDoctrine;
 use Vologzhan\DoctrineDto\DtoMetadataFactory;
-use Vologzhan\DoctrineDto\Tests\Dto\CityDto;
-use Vologzhan\DoctrineDto\Tests\Dto\NewsDto;
+use Vologzhan\DoctrineDto\Tests\Dto\PhotoDto;
 use Vologzhan\DoctrineDto\Tests\Dto\ProfileDto;
 use Vologzhan\DoctrineDto\Tests\Dto\UserDto;
 
@@ -42,32 +41,27 @@ final class MetadataFactoryTest extends TestCase
     public function testCreate(): void
     {
         $expected = new DtoMetadata(UserDto::class, false, null, null,
-            [],
+            [
+                new Property('balance', 'float', new PropertyDoctrine('balance')),
+                new Property('createdAt', 'DateTimeInterface', new PropertyDoctrine('created_at')),
+                new Property('updatedAt', 'DateTimeImmutable', new PropertyDoctrine('updated_at')),
+                new Property('deletedAt', 'DateTime', new PropertyDoctrine('deleted_at')),
+            ],
             [
                 new DtoMetadata(ProfileDto::class, false, UserDto::class, 'profile',
                     [
-                        new Property('firstName', null, new PropertyDoctrine('first_name')),
-                        new Property('secondName', null, new PropertyDoctrine('second_name')),
-                        new Property('email', null, new PropertyDoctrine('email')),
-                    ],
-                    [],
-                    new DtoDoctrine('profile', 'id'),
-                ),
-                new DtoMetadata(CityDto::class, false, UserDto::class, 'city',
-                    [
-                        new Property('name', null, new PropertyDoctrine('name')),
+                        new Property('nickname', 'string', new PropertyDoctrine('nickname')),
                     ],
                     [
-                        new DtoMetadata(NewsDto::class, true, CityDto::class, 'news',
+                        new DtoMetadata(PhotoDto::class, true, ProfileDto::class, 'photos',
                             [
-                                new Property('title', null, new PropertyDoctrine('title')),
-                                new Property('link', null, new PropertyDoctrine('link')),
+                                new Property('link', 'string', new PropertyDoctrine('link')),
                             ],
                             [],
-                            new DtoDoctrine('news', 'id'),
-                        ),
+                            new DtoDoctrine('profile_photo', 'id')
+                        )
                     ],
-                    new DtoDoctrine('city', 'id'),
+                    new DtoDoctrine('profile', 'id'),
                 ),
             ],
             new DtoDoctrine('users', 'id')

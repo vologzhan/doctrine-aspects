@@ -11,6 +11,9 @@ use Vologzhan\DoctrineDto\Annotation\Dto;
  */
 class UserDto
 {
-    public ProfileDto $profile;
-    public CityDto $city;
+    public ?ProfileDto $profile;
+    public ?float $balance;
+    public \DateTimeInterface $createdAt;
+    public ?\DateTimeImmutable $updatedAt;
+    public ?\DateTime $deletedAt;
 }

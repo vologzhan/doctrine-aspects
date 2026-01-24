@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Vologzhan\DoctrineDto\Tests\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -19,22 +20,17 @@ class Profile
     private int $id;
 
     /**
-     * @ORM\Column("first_name")
+     * @ORM\Column
      */
-    private string $firstName;
-
-    /**
-     * @ORM\Column("second_name")
-     */
-    private string $secondName;
-
-    /**
-     * @ORM\Column("email")
-     */
-    private string $email;
+    private string $nickname;
 
     /**
      * @ORM\OneToOne(targetEntity="User", inversedBy="profile")
      */
     private User $user;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Photo", mappedBy="profile")
+     */
+    private Collection $photos;
 }

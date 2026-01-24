@@ -8,28 +8,23 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table("news")
+ * @ORM\Table("profile_photo")
  */
-class News
+final class Photo
 {
     /**
      * @ORM\Id
      * @ORM\Column(type="integer")
      */
-    private int $id;
+    private $id;
 
     /**
-     * @ORM\Column("title")
-     */
-    private string $title;
-
-    /**
-     * @ORM\Column("link")
+     * @ORM\Column
      */
     private string $link;
 
     /**
-     * @ORM\ManyToOne(targetEntity="City", inversedBy="news")
+     * @ORM\ManyToOne(targetEntity="Profile", inversedBy="photos")
      */
-    private City $city;
+    private Profile $profile;
 }

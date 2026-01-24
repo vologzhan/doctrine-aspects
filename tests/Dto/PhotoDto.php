@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Vologzhan\DoctrineDto\Tests\Dto;
 
-final class NewsDto
+final class PhotoDto
 {
-    public string $title;
     public string $link;
 }

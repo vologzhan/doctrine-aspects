@@ -4,7 +4,11 @@ RUN apk add --no-cache \
     git \
     unzip \
     zip \
-    curl
+    curl \
+    $PHPIZE_DEPS
+
+RUN pecl install xdebug-3.1.6 \
+    && docker-php-ext-enable xdebug
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

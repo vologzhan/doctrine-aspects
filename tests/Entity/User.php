@@ -19,12 +19,27 @@ class User
     private $id;
 
     /**
+     * @ORM\Column
+     */
+    private ?float $balance;
+
+    /**
+     * @ORM\Column(name="created_at")
+     */
+    private \DateTimeInterface $createdAt;
+
+    /**
+     * @ORM\Column(name="updated_at")
+     */
+    private ?\DateTimeInterface $updatedAt;
+
+    /**
+     * @ORM\Column(name="deleted_at")
+     */
+    private ?\DateTimeInterface $deletedAt;
+
+    /**
      * @ORM\OneToOne(targetEntity="Profile", mappedBy="user")
      */
     private Profile $profile;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="City", inversedBy="users")
-     */
-    private City $city;
 }

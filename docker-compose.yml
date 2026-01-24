@@ -6,3 +6,6 @@ services:
       dockerfile: docker/php/Dockerfile
     volumes:
       - ./:/app
+      - ./docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    environment:
+      PHP_IDE_CONFIG: "serverName=doctrine-dto"

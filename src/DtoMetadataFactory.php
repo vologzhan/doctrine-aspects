@@ -84,19 +84,7 @@ final class DtoMetadataFactory
             }
 
             $typeName = $type->getName();
-            if (is_subclass_of($typeName, \DateTimeInterface::class) || $type->isBuiltin()) {
-                switch ($typeName) {
-                    case 'float':
-                    case \DateTime::class:
-                    case \DateTimeImmutable::class:
-                        break;
-                    case \DateTimeInterface::class:
-                        $typeName = \DateTimeImmutable::class;
-                        break;
-                    default:
-                        $typeName = null;
-                }
-
+            if (is_a($typeName, \DateTimeInterface::class, true) || $type->isBuiltin()) {
                 $properties[] = new Property($prop->name, $typeName);
                 continue;
             }
