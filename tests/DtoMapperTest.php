@@ -11,12 +11,14 @@ use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Tools\Setup;
 use PHPUnit\Framework\TestCase;
 use Vologzhan\DoctrineDto\DtoMapper;
+use Vologzhan\DoctrineDto\DtoMetadataFactory;
 use Vologzhan\DoctrineDto\Tests\Dto\UserDto;
 use Vologzhan\DoctrineDto\Tests\Entity\User;
 
 final class DtoMapperTest extends TestCase
 {
     private EntityManagerInterface $em;
+    private DtoMapper $mapper;
 
     protected function setUp(): void
     {
@@ -30,6 +32,9 @@ final class DtoMapperTest extends TestCase
             ['driver' => 'pdo_sqlite', 'memory' => true],
             $config
         );
+
+        $factory = new DtoMetadataFactory($this->em);
+        $this->mapper = new DtoMapper($this->em, $factory);
     }
 
     public function testArray(): void
@@ -45,6 +50,6 @@ final class DtoMapperTest extends TestCase
 
         $this->assertEquals(
             'FROM users u0_ LEFT JOIN profile p1_ ON u0_.id = p1_.user_id LEFT JOIN city c2_ ON u0_.city_id = c2_.id LEFT JOIN news n3_ ON c2_.id = n3_.city_id',
-            DtoMapper::array(UserDto::class, $qb));
+            $this->mapper->array(UserDto::class, $qb));
     }
 }

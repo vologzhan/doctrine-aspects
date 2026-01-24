@@ -9,19 +9,19 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Driver\AnnotationDriver;
 use Doctrine\ORM\Tools\Setup;
 use PHPUnit\Framework\TestCase;
-use Vologzhan\DoctrineDto\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Dto\Property;
-use Vologzhan\DoctrineDto\Dto\PropertyRel;
-use Vologzhan\DoctrineDto\MetadataFactory;
+use Vologzhan\DoctrineDto\DtoMetadata\DtoDoctrine;
+use Vologzhan\DoctrineDto\DtoMetadata\DtoMetadata;
+use Vologzhan\DoctrineDto\DtoMetadata\Property;
+use Vologzhan\DoctrineDto\DtoMetadata\PropertyDoctrine;
+use Vologzhan\DoctrineDto\DtoMetadataFactory;
 use Vologzhan\DoctrineDto\Tests\Dto\CityDto;
 use Vologzhan\DoctrineDto\Tests\Dto\NewsDto;
 use Vologzhan\DoctrineDto\Tests\Dto\ProfileDto;
 use Vologzhan\DoctrineDto\Tests\Dto\UserDto;
-use Vologzhan\DoctrineDto\Tests\Entity\User;
 
 final class MetadataFactoryTest extends TestCase
 {
-    private MetadataFactory $metadataFactory;
+    private DtoMetadataFactory $metadataFactory;
 
     protected function setUp(): void
     {
@@ -36,50 +36,44 @@ final class MetadataFactoryTest extends TestCase
             $config
         );
 
-        $this->metadataFactory = new MetadataFactory($em);
+        $this->metadataFactory = new DtoMetadataFactory($em);
     }
 
     public function testCreate(): void
     {
-        $expected = new DtoMetadata(UserDto::class, [
-            new PropertyRel('profile', false, new DtoMetadata(ProfileDto::class, [
-                new Property('firstName'),
-                new Property('secondName'),
-                new Property('email'),
-            ])),
-            new PropertyRel('city', false, new DtoMetadata(CityDto::class, [
-                new Property('name'),
-                new PropertyRel('news', true, new DtoMetadata(NewsDto::class, [
-                    new Property('title'),
-                    new Property('link'),
-                ]))
-            ]))
-        ]);
+        $expected = new DtoMetadata(UserDto::class, false, null, null,
+            [],
+            [
+                new DtoMetadata(ProfileDto::class, false, UserDto::class, 'profile',
+                    [
+                        new Property('firstName', null, new PropertyDoctrine('first_name')),
+                        new Property('secondName', null, new PropertyDoctrine('second_name')),
+                        new Property('email', null, new PropertyDoctrine('email')),
+                    ],
+                    [],
+                    new DtoDoctrine('profile', 'id'),
+                ),
+                new DtoMetadata(CityDto::class, false, UserDto::class, 'city',
+                    [
+                        new Property('name', null, new PropertyDoctrine('name')),
+                    ],
+                    [
+                        new DtoMetadata(NewsDto::class, true, CityDto::class, 'news',
+                            [
+                                new Property('title', null, new PropertyDoctrine('title')),
+                                new Property('link', null, new PropertyDoctrine('link')),
+                            ],
+                            [],
+                            new DtoDoctrine('news', 'id'),
+                        ),
+                    ],
+                    new DtoDoctrine('city', 'id'),
+                ),
+            ],
+            new DtoDoctrine('users', 'id')
+        );
 
-        $expected->tableName = 'users';
-        $expected->primaryKey = 'id';
-        $expected->properties[0]->dtoMetadata->tableName = 'profile';
-        $expected->properties[0]->dtoMetadata->primaryKey = 'id';
-        $expected->properties[0]->property->columnName = 'id';
-        $expected->properties[0]->foreignColumn = 'user_id';
-        $expected->properties[0]->dtoMetadata->properties[0]->columnName = 'first_name';
-        $expected->properties[0]->dtoMetadata->properties[1]->columnName = 'second_name';
-        $expected->properties[0]->dtoMetadata->properties[2]->columnName = 'email';
-
-        $expected->properties[1]->dtoMetadata->tableName = 'city';
-        $expected->properties[1]->dtoMetadata->primaryKey = 'id';
-        $expected->properties[1]->property->columnName = 'city_id';
-        $expected->properties[1]->foreignColumn = 'id';
-        $expected->properties[1]->dtoMetadata->properties[0]->columnName = 'name';
-
-        $expected->properties[1]->dtoMetadata->properties[1]->dtoMetadata->tableName = 'news';
-        $expected->properties[1]->dtoMetadata->properties[1]->dtoMetadata->primaryKey = 'id';
-        $expected->properties[1]->dtoMetadata->properties[1]->property->columnName = 'id';
-        $expected->properties[1]->dtoMetadata->properties[1]->foreignColumn = 'city_id';
-        $expected->properties[1]->dtoMetadata->properties[1]->dtoMetadata->properties[0]->columnName = 'title';
-        $expected->properties[1]->dtoMetadata->properties[1]->dtoMetadata->properties[1]->columnName = 'link';
-
-        $actual = $this->metadataFactory->create(UserDto::class, User::class);
+        $actual = $this->metadataFactory->create(UserDto::class);
 
         $this->assertEquals($expected, $actual);
     }

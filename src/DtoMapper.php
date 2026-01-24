@@ -5,122 +5,79 @@ declare(strict_types=1);
 namespace Vologzhan\DoctrineDto;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\MappingException;
 use Doctrine\ORM\QueryBuilder;
 use PHPSQLParser\PHPSQLParser;
-use Vologzhan\DoctrineDto\Dto\DtoMetadata;
-use Vologzhan\DoctrineDto\Dto\Property;
-use Vologzhan\DoctrineDto\Dto\PropertyRel;
-use Vologzhan\DoctrineDto\Tests\Entity\User;
+use Vologzhan\DoctrineDto\DtoMetadata\DtoMetadata;
+use Vologzhan\DoctrineDto\Exception\DoctrineDtoException;
 
 class DtoMapper
 {
-    /**
-     * @template T
-     * @param class-string<T> $dtoClassName
-     * @param EntityManagerInterface|QueryBuilder $doctrine
-     * @return T
-     */
-    public static function one(string $dtoClassName, $doctrine, string $sql = '', array $params = [])
+    private EntityManagerInterface $entityManager;
+    private DtoMetadataFactory $dtoMetadataFactory;
+
+    public function __construct(EntityManagerInterface $entityManager, DtoMetadataFactory $dtoMetadataFactory)
     {
-        // todo
+        $this->entityManager = $entityManager;
+        $this->dtoMetadataFactory = $dtoMetadataFactory;
     }
 
     /**
      * @template T
      * @param class-string<T> $dtoClassName
-     * @param EntityManagerInterface|QueryBuilder $doctrine
-     * @return T|null
-     */
-    public static function oneOrNull(string $dtoClassName, $doctrine, string $sql = '', array $params = [])
-    {
-        // todo
-    }
-
-    /**
-     * @template T
-     * @param class-string<T> $dtoClassName
-     * @param QueryBuilder $doctrine
+     * @param QueryBuilder $queryBuilder
      * @return T[]
-     *
-     * @throws DoctrineDtoException
      */
-    public static function array(string $dtoClassName, QueryBuilder $doctrine): string
+    public function array(string $dtoClassName, QueryBuilder $queryBuilder): array
     {
-        $em = $doctrine->getEntityManager();
-
-        $sql = $doctrine->getQuery()->getSQL();
+        $sql = $queryBuilder->getQuery()->getSQL();
         if ($sql === '') {
             throw new DoctrineDtoException('empty sql');
         }
 
-        $from = self::eraseSelectStatement($sql);
-        $selects = self::getSelect($dtoClassName, $from, $em);
-        $fullSql = sprintf("SELECT %s %s", implode(', ', array_keys($selects)), $from);
+        $dtoMetadata = $this->dtoMetadataFactory->create($dtoClassName);
+
+        $from = $this->eraseSelectStatement($sql);
+        $joinMetadataMap = $this->arrangeMetadataByJoins($dtoMetadata, $from);
+        $metadataColumns = ColumnMetadataFactory::create($joinMetadataMap);
+        $fullSql = sprintf("SELECT %s %s", implode(', ', array_keys($metadataColumns)), $from);
 
         $paramValues = [];
         $paramTypes = [];
-
-        foreach ($doctrine->getQuery()->getParameters() as $param) {
-            $paramValues[$param->getName()] = $param->getValue();
-            $paramTypes[$param->getName()] = $param->getType();
+        foreach ($queryBuilder->getQuery()->getParameters() as $param) {
+            $paramValues[] = $param->getValue();
+            $paramTypes[] = $param->getType();
         }
 
-        $result = $em->getConnection()->fetchAllNumeric($fullSql, $paramValues, $paramTypes);
+        $rows = $this->entityManager->getConnection()->fetchAllNumeric($fullSql, $paramValues, $paramTypes);
 
-        return $sql;
+        return DtoHydrator::hydrate($rows, array_values($metadataColumns));
     }
 
-    private static function eraseSelectStatement(string $sql): string
+    private function eraseSelectStatement(string $sql): string
     {
         return preg_replace('/SELECT\s+(.+?)\s+FROM/i', 'FROM', $sql);
     }
 
-    private static function getSelect(string $dtoClassName, string $sql, EntityManagerInterface $em): array
-    {
-        $metadataList = self::getMetadata($dtoClassName, $sql, $em);
-
-        $columns = [];
-        foreach ($metadataList as $alias => $meta) {
-            // false - id missing in properties
-            // todo ключи только для листов
-            $columns[sprintf('%s.%s', $alias, $meta->primaryKey)] = false;
-
-            foreach ($meta->properties as $property) {
-                if ($property instanceof Property) {
-                    $columns[sprintf('%s.%s', $alias, $property->columnName)] = true;
-                }
-            }
-        }
-
-        return $columns;
-    }
-
     /**
-     * @throws MappingException
      * @throws DoctrineDtoException
-     * @throws \ReflectionException
      */
-    private static function getMetadata(string $dtoClassName, string $sql, EntityManagerInterface $em): array
+    private function arrangeMetadataByJoins(DtoMetadata $metadata, string $sql): array
     {
         $parser = new PHPSQLParser();
         $ast = $parser->parse($sql);
 
-        $metadataFactory = new MetadataFactory($em);
-        $metadata = $metadataFactory->create($dtoClassName, User::class);
-
-        /** @var DtoMetadata[] $joins */
-        $joins = [];
+        /** @var DtoMetadata[] $dtoMetadataMap */
+        $dtoMetadataMap = [];
         foreach ($ast['FROM'] as $i => $from) {
             $table = $from['table'];
             $alias = $from['alias']['name'] ?? null;
             $name = $alias ?: $table;
 
             if ($i === 0) {
-                if ($table !== $metadata->tableName) {
-                    throw new DoctrineDtoException("Запрос должен начинаться с 'FROM $metadata->tableName'");
+                if ($table !== $metadata->doctrine->tableName) {
+                    throw new DoctrineDtoException("Запрос должен начинаться с 'FROM {$metadata->doctrine->tableName}'");
                 }
-                $joins[$name] = $metadata;
+                $dtoMetadataMap[$name] = $metadata;
 
                 continue; // основная таблица
             }
@@ -130,11 +87,11 @@ class DtoMapper
 
             $currentMeta = null;
             $currentRelation = null;
-            if (array_key_exists($rel1, $joins)) {
-                $currentMeta = $joins[$rel1];
+            if (array_key_exists($rel1, $dtoMetadataMap)) {
+                $currentMeta = $dtoMetadataMap[$rel1];
                 $currentRelation = $rel2;
             } else {
-                $currentMeta = $joins[$rel2] ?? null;
+                $currentMeta = $dtoMetadataMap[$rel2] ?? null;
                 $currentRelation = $rel1;
             }
             if ($currentMeta === null) {
@@ -142,9 +99,10 @@ class DtoMapper
             }
 
             $nextMeta = null;
-            foreach ($currentMeta->properties as $prop) {
-                if ($prop instanceof PropertyRel && $prop->dtoMetadata->tableName === $table) {
-                    $nextMeta = $prop->dtoMetadata;
+            foreach ($currentMeta->relations as $rel) {
+                $tableName = $rel->doctrine->tableName;
+                if ($tableName === $table || sprintf("public.$tableName", ) === $table) { // todo schema from Doctrine
+                    $nextMeta = $rel;
                     break;
                 }
             }
@@ -152,9 +110,9 @@ class DtoMapper
                 throw new DoctrineDtoException("Metadata for JOIN not found"); // todo добавить больше инфы в ошибку
             }
 
-            $joins[$currentRelation] = $nextMeta;
+            $dtoMetadataMap[$currentRelation] = $nextMeta;
         }
 
-        return $joins;
+        return $dtoMetadataMap;
     }
 }

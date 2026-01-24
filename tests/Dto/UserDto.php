@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Vologzhan\DoctrineDto\Tests\Dto;
 
-use Vologzhan\DoctrineDto\Dto;
+use Vologzhan\DoctrineDto\Annotation\Dto;
 
 /**
  * @Dto(\Vologzhan\DoctrineDto\Tests\Entity\User::class)
