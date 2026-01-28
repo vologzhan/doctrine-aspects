@@ -46,15 +46,19 @@ final class DtoMapperTest extends TestCase
         $sqls = $schemaTool->getCreateSchemaSql($metadata);
 
         $conn = $this->em->getConnection();
-
+        $conn->beginTransaction();
+        $conn->executeStatement('CREATE SCHEMA IF NOT EXISTS public');
         foreach ($sqls as $sql) {
             $conn->executeStatement($sql);
         }
 
         $factory = new DtoMetadataFactory($this->em);
         $this->mapper = new DtoMapper($this->em, $factory);
+    }
 
-        $conn->beginTransaction();
+    protected function tearDown(): void
+    {
+        $this->em->getConnection()->rollBack();
     }
 
     public function testSelectEmpty(): void
@@ -67,5 +71,29 @@ final class DtoMapperTest extends TestCase
             ->leftJoin('profile.photos', 'photos');
 
         $this->assertEquals([], $this->mapper->array(UserDto::class, $qb));
+    }
+
+    public function testEmptyProfile(): void
+    {
+        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $this->em->getConnection()->executeStatement(
+            "INSERT INTO users (id, balance, created_at, updated_at, deleted_at) VALUES (1, null, '$now', '$now', '$now')",
+        );
+
+        $qb = $this->em
+            ->createQueryBuilder()
+            ->select('user', 'profile', 'photos')
+            ->from(User::class, 'user')
+            ->leftJoin('user.profile', 'profile')
+            ->leftJoin('profile.photos', 'photos');
+
+        $user = new UserDto();
+        $user->balance = null;
+        $user->createdAt = new \DateTimeImmutable($now);
+        $user->updatedAt = new \DateTimeImmutable($now);
+        $user->deletedAt = new \DateTime($now);
+        $user->profile = null;
+
+        $this->assertEquals([$user], $this->mapper->array(UserDto::class, $qb));
     }
 }

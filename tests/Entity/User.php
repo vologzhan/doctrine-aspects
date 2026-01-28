@@ -19,7 +19,7 @@ class User
     private $id;
 
     /**
-     * @ORM\Column
+     * @ORM\Column(nullable=true)
      */
     private ?float $balance;
 

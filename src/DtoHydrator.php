@@ -65,14 +65,15 @@ class DtoHydrator
                 }
 
                 if ($metadata->dtoPropertyName) {
-                    switch ($metadata->type) {
-                        case 'float':
-                            $v = (float)$v;
-                            break;
-                        case null:
-                            break;
-                        default:
-                            $v = new $metadata->type($v);
+                    $type = $metadata->type;
+                    if ($v === null) {
+                        // nothing
+                    } elseif ($type === \DateTimeInterface::class || $type === \DateTimeImmutable::class) {
+                        $v = new \DateTimeImmutable($v);
+                    } elseif ($type === \DateTime::class) {
+                        $v = new \DateTime($v);
+                    } elseif ($type === 'float') {
+                        $v = (float)$v;
                     }
 
                     $dto->{$metadata->dtoPropertyName} = $v;
