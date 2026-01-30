@@ -29,17 +29,17 @@ class User
     private \DateTimeInterface $createdAt;
 
     /**
-     * @ORM\Column(name="updated_at")
+     * @ORM\Column(name="updated_at", nullable=true)
      */
     private ?\DateTimeInterface $updatedAt;
 
     /**
-     * @ORM\Column(name="deleted_at")
+     * @ORM\Column(name="deleted_at", nullable=true)
      */
     private ?\DateTimeInterface $deletedAt;
 
     /**
      * @ORM\OneToOne(targetEntity="Profile", mappedBy="user")
      */
-    private Profile $profile;
+    private ?Profile $profile;
 }

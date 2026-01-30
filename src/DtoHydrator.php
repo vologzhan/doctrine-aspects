@@ -24,19 +24,13 @@ class DtoHydrator
                 $metadata = $metadataColumns[$i];
 
                 if ($metadata->isPrimaryKey) {
-                    $skip = false;
-                    if ($v === null) {
+                    $skip = $v === null;
+                    if ($skip) {
                         $parent = $currentDtoList[$metadata->parentClassName] ?? null;
-
                         if ($parent) {
-                            if ($metadata->isArray) {
-                                $parent->{$metadata->parentPropertyName} = [];
-                            } else {
-                                $parent->{$metadata->parentPropertyName} = null;
-                            }
+                            $parent->{$metadata->parentPropertyName} = $metadata->isArray ? [] : null;
                         }
 
-                        $skip = true;
                         continue;
                     }
 
@@ -50,7 +44,6 @@ class DtoHydrator
 
                     if ($metadata->parentClassName) {
                         $parent = $currentDtoList[$metadata->parentClassName];
-                        // todo может ли тут не быть панета???
 
                         if ($metadata->isArray) {
                             $parent->{$metadata->parentPropertyName}[] = $dto;
@@ -60,24 +53,22 @@ class DtoHydrator
                     }
                 }
 
-                if ($skip) {
+                if ($skip || $metadata->dtoPropertyName === null) {
                     continue;
                 }
 
-                if ($metadata->dtoPropertyName) {
-                    $type = $metadata->type;
-                    if ($v === null) {
-                        // nothing
-                    } elseif ($type === \DateTimeInterface::class || $type === \DateTimeImmutable::class) {
-                        $v = new \DateTimeImmutable($v);
-                    } elseif ($type === \DateTime::class) {
-                        $v = new \DateTime($v);
-                    } elseif ($type === 'float') {
-                        $v = (float)$v;
-                    }
-
-                    $dto->{$metadata->dtoPropertyName} = $v;
+                $type = $metadata->type;
+                if ($v === null) {
+                    // nothing
+                } elseif ($type === \DateTimeInterface::class || $type === \DateTimeImmutable::class) {
+                    $v = new \DateTimeImmutable($v);
+                } elseif ($type === \DateTime::class) {
+                    $v = new \DateTime($v);
+                } elseif ($type === 'float') {
+                    $v = (float)$v;
                 }
+
+                $dto->{$metadata->dtoPropertyName} = $v;
             }
         }
 
